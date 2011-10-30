@@ -3,7 +3,7 @@
 
 class Batoh
 
-  attr_accessor :w, :p, :cap, :state
+  attr_accessor :w, :p, :cap, :state, :depth
 
   def price
     ps = 0
@@ -18,25 +18,47 @@ class Batoh
     for i in 0..@state.size do
       ws += @w[i] if @state[i].eql?(1)
     end
-    if self.over?
-      return 0
-    else  
-      return ws
-    end
+    return ws
   end
   
   def over?
     if (self.weight > @cap)
-      true
+      return true
     else
-      false
+      return false
     end
   end
   
-  def initialize(w, p, cap, state)
+  def initialize(w, p, cap, state, depth = 0)
     @w = w
     @p = p
     @cap = cap
     @state = state
+    @depth = depth
   end
+  
+  def expand
+    puts @depth.to_s+" resim: "+@state.to_s
+    res = Array.new
+    if (@depth < @state.size.to_i)
+      b0 = Marshal.load(Marshal.dump(self))
+      b0.state[b0.depth] = 0
+      b0.depth = @depth + 1
+      b1 = Marshal.load(Marshal.dump(self))
+      b1.state[b1.depth] = 1
+      b1.depth = @depth + 1
+      res.push(b0)
+      res.push(b1)
+      return res
+      #if (a.weight > b.weight)
+      #  return a
+      #else
+      #  return b
+      #end
+      #else
+      #  pp batoh.state
+      #  return batoh
+    end  
+  end
+  
 end

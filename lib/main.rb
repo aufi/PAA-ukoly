@@ -31,30 +31,9 @@ def load(filename)
 end
 
 
-def states(batoh, i)
-  puts i.to_s+" resim: "+batoh.state.to_s
-  #pp batoh
-  if (i < batoh.state.size().to_i)
-    b0 = Marshal.load(Marshal.dump(batoh))
-    b0.state[i] = 0
-    b1 = Marshal.load(Marshal.dump(batoh))
-    b1.state[i] = 1
-    a = states(b0, i+1)
-    b = states(b1, i+1)
-    if (a.weight > b.weight)
-      return a
-    else
-      return b
-    end
-  else
-    pp batoh.state
-    return batoh
-  end  
-end
-
 data = load("../test/data")
 
-#pp states(data[0], 0)
+#pp states(data[0])
 
 q = Paaq.new
 
@@ -64,10 +43,26 @@ cnt = data[0].state.size()
 
 puts cnt.to_s
 
-for i in 0..cnt
-  
+max_price = 0
+max_sol = data[0]
+
+while (!q.empty?)
+  #puts "krok z fronty o delce "+q.size.to_s
+  p = q.pop().expand
+  next if p.nil?  #fix
+  p.each { |i| 
+    if !i.over? 
+      if (i.price.to_i >= max_price)
+        max_price = i.price.to_i
+        max_sol = i
+      end
+      q.push(i) 
+    end
+  }
 end
 
+puts "nejvyssi cena: "+max_price.to_s
+pp max_sol
 
 puts "konec"
 
