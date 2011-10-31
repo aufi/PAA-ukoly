@@ -13,10 +13,30 @@ class Batoh
     return ps
   end
   
+  def bb_price
+    ps = 0
+    for i in @depth..(@state.size-1) do
+      ps += @p[i]
+    end
+    return ps
+  end
+  
+  def score(prev)
+    if self.over?
+      return 0
+    else
+      ps = 0
+      for i in 0..@state.size do
+        ps += @p[i].to_i if @state[i] == 1  #fix i ta vec
+      end
+      return ps
+    end
+  end
+  
   def weight
     ws = 0
     for i in 0..@state.size do
-      ws += @w[i] if @state[i].eql?(1)
+      ws += @w[i].to_i if @state[i].eql?(1)
     end
     return ws
   end
@@ -38,7 +58,7 @@ class Batoh
   end
   
   def expand
-    puts @depth.to_s+" resim: "+@state.to_s
+    puts @depth.to_s+" resim: ("+self.bb_price.to_s+") "+@state.to_s
     res = Array.new
     if (@depth < @state.size.to_i)
       b0 = Marshal.load(Marshal.dump(self))
