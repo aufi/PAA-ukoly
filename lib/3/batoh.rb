@@ -21,8 +21,16 @@ class Batoh
     return ps
   end
   
-  def score()
-    return self.price / (self.weight + 1)
+  def score(prev)
+    if self.over?
+      return 0
+    else
+      ps = 0
+      for i in 0..@state.size do
+        ps += @p[i].to_i if @state[i] == 1  #fix i ta vec
+      end
+      return ps
+    end
   end
   
   def weight

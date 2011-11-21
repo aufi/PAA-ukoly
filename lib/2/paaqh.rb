@@ -3,7 +3,7 @@
 # projití a vybráni stavu s nejmenší rozdílem aktuální/chtěný
 #
 
-#require 'priority_queue' - v mainu
+#require 'priority_queue' # - v mainu
 
 class Paaqh
   @elems
@@ -21,10 +21,10 @@ class Paaqh
   end
   
   def push(it, prio)
-    if $v[it.get_key].nil?
+    #if $v[it.get_key].nil?
       @elems.push(it, prio) 
-      $v[it.get_key] = it
-    end
+     # $v[it.get_key] = it
+    #end
   end
   
   def pop()
