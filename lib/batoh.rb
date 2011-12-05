@@ -5,24 +5,56 @@ class Batoh
 
   attr_accessor :w, :p, :cap, :state, :depth
 
+  #nahodne naplni batoh
+  def randomfill
+    for i in 0..(@state.size-1) do
+      if (rand(10) > 4)
+        @state[i] = 1
+      else
+        @state[i] = 0
+      end
+    end
+  end
+  
+  # cnt-krat odebere nebo prida vec na nahodnem miste
+  def mutate(cnt = 1)
+    for i in 0..cnt do
+      j = rand(@state.size)
+      if (@state[j] == 0)
+        @state[j] = 1
+      else
+        @state[j] = 0
+      end
+    end
+    self
+  end
+  
+  #vezme dva a projde bity tak, ze je nahoda, jestli je bit po mame nebo tatovi
+  def kriz(druhej)
+    for i in (0..@state.size-1) do
+      if (rand(10) > 4)
+        @state[i] = @state[i]
+      else
+        @state[i] = druhej.state[i]
+      end
+    end
+    self
+  end
+  
+  def fitness
+    if self.over?
+      return 0
+    else
+      return self.price+(@cap - self.weight)  #zlepseni - pridani volneho mista do fitness
+    end
+  end
+  
   def price
     ps = 0
     for i in 0..@state.size do
       ps += @p[i] if @state[i] == 1
     end
     return ps
-  end
-  
-  def bb_price
-    ps = 0
-    for i in @depth..(@state.size-1) do
-      ps += @p[i]
-    end
-    return ps
-  end
-  
-  def score()
-    return self.price / (self.weight + 1)
   end
   
   def weight
@@ -47,30 +79,6 @@ class Batoh
     @cap = cap
     @state = state
     @depth = depth
-  end
-  
-  def expand
-    #puts @depth.to_s+" resim: ("+self.bb_price.to_s+") "+@state.to_s
-    res = Array.new
-    if (@depth < @state.size.to_i)
-      b0 = Marshal.load(Marshal.dump(self))
-      b0.state[b0.depth] = 0
-      b0.depth = @depth + 1
-      b1 = Marshal.load(Marshal.dump(self))
-      b1.state[b1.depth] = 1
-      b1.depth = @depth + 1
-      res.push(b0)
-      res.push(b1)
-      return res
-      #if (a.weight > b.weight)
-      #  return a
-      #else
-      #  return b
-      #end
-      #else
-      #  pp batoh.state
-      #  return batoh
-    end  
   end
   
 end
