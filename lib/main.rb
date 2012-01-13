@@ -7,27 +7,33 @@ require 'priority_queue'
 require 'thread'
 require 'pp'
 
-require File.expand_path(File.join(File.dirname(__FILE__), 'batoh'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'formule.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), '2/paaqh.rb'))
 
-puts "PAA 5.uloha geneticky algoritmus"
+puts "PAA 6.uloha 3SAT GA"
 
-def load(filename)
+def load(dir)
+  #nacteni souboru v adresari
   data = Array.new
-  f = File.new(filename, "r")
-  while (line = f.gets())
-    nums = line.split(" ")
-    w = Array.new
-    p = Array.new
-    cnt = 0
-    for i in (0..nums.at(1).to_i-1)
-      w.push(nums.at(3+2*i).to_i)
-      p.push(nums.at(4+2*i).to_i)
-      cnt += 1
+  Dir.new(dir).entries.each do |filename|
+    next if filename == '.' || filename == '..'
+    #cteni dat ze souboru
+    f = File.new(dir+'/'+filename, "r")
+    while (line = f.gets())
+      next if line.start_with?('c') || line.start_with?('p')
+      break if line.start_with?('%')
+      nums = line.split(" ")
+      k = Array.new
+      cnt = 0
+      for i in (0..2)
+        k.push(Literal.new(nums.at(i).to_i))
+        cnt += 1
+      end
+      data.push(Klauzule.new(k))
+      #data.push(Batoh.new(w, p, nums.at(2).to_i, Array.new(cnt, 0)))  
     end
-    data.push(Batoh.new(w, p, nums.at(2).to_i, Array.new(cnt, 0)))  
   end
-  #pp data.to_s
+  pp data.to_s
   return data
 end
 
@@ -94,26 +100,34 @@ $zachovat_nejlepsich = 2
 $mutace_rodice = 1
 $mutace_ostatni = 1
 
-#---------------pro vsechny vahy------------------------------------------------
-vahy = [40] #, 10, 15, 20, 25, 27, 30, 40
-vahy.each { |fi|  
+#---------------pro vsechny druhy formuli------------------------------------------------
+formule = ['uf20-91'] #, 10, 15, 20, 25, 27, 30, 40
+formule.each { |fi|  
 
-  puts "pocet veci: "+fi.to_s
+  puts "priklad: "+fi.to_s
   
-  data = load("../test/batoh/"+fi.to_s)
+  data = load("../test/sat/"+fi.to_s)
 
+  next
+  
   #data.each { |d| 
   
   g = Generace.new(data[0])
   
+  tstart = Process.times.utime
+  
   for i in 1..$pocet_generaci
     g.vytvor  #novou generaci
     g.krok  #nastav novou generaci za aktualni
-    puts g.nejlepsi.price
+    #puts g.nejlepsi.price
   end
+  
+  ut = Process.times.utime - tstart
   
   nejlepsi = g.nejlepsi
   puts "nejlepsi: "+nejlepsi.price.to_s+" (vaha "+nejlepsi.weight.to_s+"/"+nejlepsi.cap.to_s+")"
+  
+  puts ut.to_s
   
   #}
   #puts r.price.to_s+";"+r.weight.to_s+";"+ut.round(4).to_s
