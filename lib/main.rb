@@ -8,33 +8,34 @@ require 'thread'
 require 'pp'
 
 require File.expand_path(File.join(File.dirname(__FILE__), 'formule.rb'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'klauzule.rb'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'literal.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), '2/paaqh.rb'))
 
 puts "PAA 6.uloha 3SAT GA"
 
 def load(dir)
   #nacteni souboru v adresari
-  data = Array.new
+  formule = Array.new
   Dir.new(dir).entries.each do |filename|
-    next if filename == '.' || filename == '..'
+    next if filename == '.' || filename == '..' || filename == '.svn'
     #cteni dat ze souboru
     f = File.new(dir+'/'+filename, "r")
+    data = Array.new
     while (line = f.gets())
-      next if line.start_with?('c') || line.start_with?('p')
+      next if line.start_with?('c') || line.start_with?('p')    #zatim neresim jina data/pocty promennych
       break if line.start_with?('%')
       nums = line.split(" ")
       k = Array.new
-      cnt = 0
       for i in (0..2)
         k.push(Literal.new(nums.at(i).to_i))
-        cnt += 1
       end
       data.push(Klauzule.new(k))
-      #data.push(Batoh.new(w, p, nums.at(2).to_i, Array.new(cnt, 0)))  
     end
+    formule.push(Formule.new(data))
   end
-  pp data.to_s
-  return data
+  #pp formule
+  return formule
 end
 
 
@@ -43,10 +44,10 @@ class Generace
   attr_accessor :res, :tmpg
   
   #vytvorim prvni nahodnou generaci
-  def initialize(batoh)
+  def initialize(data)
     @res = Paaqh.new
     for i in 1..$velikost_generace
-      b = Marshal.load(Marshal.dump(batoh))
+      b = Marshal.load(Marshal.dump(data))
       b.randomfill
       @res.push(b, b.fitness)
     end
@@ -62,7 +63,7 @@ class Generace
     end
     #dalsi krizim s mutovanym jednim rodicem (protoze jsem je vybral za sebou, tak by jinak byli podobni)
     for j in i..($velikost_generace/2)
-      break if (@res.empty?)  #pokud bych mel moc malou generaci
+      #break if (@res.empty?)  #pokud bych mel moc malou generaci
       a = Marshal.load(Marshal.dump(@res.pop))
       b = Marshal.load(Marshal.dump(@res.pop.mutate($mutace_rodice)))
       #deti
@@ -108,7 +109,20 @@ formule.each { |fi|
   
   data = load("../test/sat/"+fi.to_s)
 
-  next
+  
+  #pp data[0]
+  
+  for i in 1..1000 do
+    res = Reseni.new
+    #pp res
+    v = data[0].ohodnoceni(res)
+    print "  "+v[0].to_s+"/"+v[1].to_s
+    print "  "+v[2].to_s
+    print "  "+i.to_s
+    puts "  "+res.promenne.to_s
+  end
+  
+  exit
   
   #data.each { |d| 
   
@@ -119,7 +133,7 @@ formule.each { |fi|
   for i in 1..$pocet_generaci
     g.vytvor  #novou generaci
     g.krok  #nastav novou generaci za aktualni
-    #puts g.nejlepsi.price
+    puts g.nejlepsi.price
   end
   
   ut = Process.times.utime - tstart
