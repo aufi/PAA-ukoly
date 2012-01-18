@@ -10,10 +10,13 @@ require 'pp'
 require File.expand_path(File.join(File.dirname(__FILE__), 'formule.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'klauzule.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'literal.rb'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'reseni.rb'))
+require File.expand_path(File.join(File.dirname(__FILE__), 'g_a.rb'))
 require File.expand_path(File.join(File.dirname(__FILE__), '2/paaqh.rb'))
 
 puts "PAA 6.uloha 3SAT GA"
 
+#funkce pro nacteni dat (neni u klazule protoze nacita vic klauzuli)
 def load(dir)
   #nacteni souboru v adresari
   formule = Array.new
@@ -34,121 +37,75 @@ def load(dir)
     end
     formule.push(Formule.new(data))
   end
-  #pp formule
   return formule
 end
 
-
-class Generace
-  
-  attr_accessor :res, :tmpg
-  
-  #vytvorim prvni nahodnou generaci
-  def initialize(data)
-    @res = Paaqh.new
-    for i in 1..$velikost_generace
-      b = Marshal.load(Marshal.dump(data))
-      b.randomfill
-      @res.push(b, b.fitness)
-    end
-  end
-  
-  def vytvor
-    #puts "prvku v @res: "+@res.size.to_s
-    @tmpg = Paaqh.new
-    #nejlepsi necham
-    for i in 1..$zachovat_nejlepsich
-      x = Marshal.load(Marshal.dump(@res.pop))
-      @tmpg.push(x, x.fitness)
-    end
-    #dalsi krizim s mutovanym jednim rodicem (protoze jsem je vybral za sebou, tak by jinak byli podobni)
-    for j in i..($velikost_generace/2)
-      #break if (@res.empty?)  #pokud bych mel moc malou generaci
-      a = Marshal.load(Marshal.dump(@res.pop))
-      b = Marshal.load(Marshal.dump(@res.pop.mutate($mutace_rodice)))
-      #deti
-      d1 = a.kriz(b)
-      d2 = b.kriz(a)
-      #pridani rodice, trochu mutovaneho rodice a deti
-      @tmpg.push(d1, d1.fitness)
-      @tmpg.push(d2, d2.fitness)
-      @tmpg.push(b, b.fitness)
-      @tmpg.push(a, a.fitness)
-    end
-    #zbytek nahodna mutace
-    while (@tmpg.size < $velikost_generace)
-      tmp = Marshal.load(Marshal.dump(@res.pop.mutate($mutace_ostatni)))
-      @tmpg.push(tmp, tmp.fitness)
-    end
-    #puts "prvku v @tmpg "+@tmpg.size.to_s
-  end
-  
-  def krok
-    @res = @tmpg
-  end
-  
-  def nejlepsi
-    x = @res.pop
-    @res.push(x, x.fitness)
-    return x
-  end
-  
-end
-
-$velikost_generace = 200
-$pocet_generaci = 100
-$zachovat_nejlepsich = 2
-$mutace_rodice = 1
-$mutace_ostatni = 1
-
 #---------------pro vsechny druhy formuli------------------------------------------------
 formule = ['uf20-91'] #, 10, 15, 20, 25, 27, 30, 40
-formule.each { |fi|  
+formule.each do |fi|  
 
   puts "priklad: "+fi.to_s
   
   data = load("../test/sat/"+fi.to_s)
 
+  #pp data[0]  
+  #for i in 1..1000 do
+  #  break
+  #  res = Reseni.new
+  #  #pp res
+  #  v = data[0].ohodnoceni(res)
+  #  print i.to_s
+  #  print "  "+v[0].to_s+"/"+v[1].to_s
+  #  print "  "+v[2].to_s
+  #  puts "  "+res.promenne.to_s
+  #end
   
-  #pp data[0]
-  
-  for i in 1..1000 do
-    res = Reseni.new
-    #pp res
-    v = data[0].ohodnoceni(res)
-    print "  "+v[0].to_s+"/"+v[1].to_s
-    print "  "+v[2].to_s
-    print "  "+i.to_s
-    puts "  "+res.promenne.to_s
-  end
-  
-  exit
-  
-  #data.each { |d| 
-  
-  g = Generace.new(data[0])
-  
-  tstart = Process.times.utime
-  
-  for i in 1..$pocet_generaci
-    g.vytvor  #novou generaci
-    g.krok  #nastav novou generaci za aktualni
-    puts g.nejlepsi.price
-  end
-  
-  ut = Process.times.utime - tstart
-  
-  nejlepsi = g.nejlepsi
-  puts "nejlepsi: "+nejlepsi.price.to_s+" (vaha "+nejlepsi.weight.to_s+"/"+nejlepsi.cap.to_s+")"
-  
-  puts ut.to_s
-  
-  #}
-  #puts r.price.to_s+";"+r.weight.to_s+";"+ut.round(4).to_s
-  #puts r.weight.to_s
+  #  sum = 0
 
-} #konec iteratoru pro mereni vice inst.
+  #-------nastaveni parametru GA--------
+  $velikost_generace = 170
+  $pocet_generaci = 50
+  $zachovat_nejlepsich = 2
+  $mutace_rodice = 2
+  $mutace_ostatni = 2
+  
+  #pro vice instanci
+  data.each do |d| 
+   
+    for $velikost_generace in [210] do
+    
+      puts $velikost_generace.to_s
+      
+      tstart = Process.times.utime
+  
+      #prvni generace se vygeneruje pri inic. genetickeho algoritmu
+      g = GA.new(data[0])
+    
+      #test resnei v prvni generaci
+      #  sum += g.stats1g
+      #  next
+  
+      for i in 1..$pocet_generaci
+        g.vytvor  #vytvori novou generaci
+        g.krok  #nastavi novou generaci za aktualni
+        g.stats_maxcena #vypise info o akt.generaci
+      end
+  
+      ut = Process.times.utime - tstart
+  
+      #nejlepsi = g.nejlepsi
+      #puts "-- nejlepsi: "+g.data.ohodnoceni(nejlepsi)[2].to_s
+      puts ut.to_s
+      puts "  "
+  
+    end
 
+  end #konec iteratoru pro mereni vice inst.
+
+  puts (sum/226).to_s
+  
+end
+  
 puts "konec"
 
 
