@@ -28,7 +28,7 @@ class GA
       @tmpg.push(x, @data.ohodnoceni(x)[2])
     end
     #dalsi krizim s mutovanym jednim rodicem (protoze jsem je vybral za sebou, tak by jinak byli podobni)
-    for j in i..($velikost_generace/2)
+    for j in i..($velikost_generace/5)
       break if (@res.empty?)  #pokud bych mel moc malou generaci
       #print @res.size
       a = Marshal.load(Marshal.dump(@res.pop))
@@ -39,7 +39,7 @@ class GA
       #deti
       d1 = Marshal.load(Marshal.dump(a)).kriz(b)
       d2 = Marshal.load(Marshal.dump(b)).kriz(a)
-      #pridani rodice, trochu mutovaneho rodice a deti
+      #pridani rodice, trochu mutovaneho rodice a deti, upraveno jen deti
       @tmpg.push(d1, @data.ohodnoceni(d2)[2])
       @tmpg.push(d2, @data.ohodnoceni(d1)[2])
       #@tmpg.push(b, @data.ohodnoceni(b)[2])

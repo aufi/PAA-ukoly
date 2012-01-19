@@ -19,7 +19,7 @@ class Formule
     for i in 0..19
       cena += @vahy[i] if reseni.promenne[i] == 1
     end
-    #cena = -200 if splneno < cnt
+    cena -= 200 if splneno < cnt
     return [splneno, cnt, cena]
   end
   

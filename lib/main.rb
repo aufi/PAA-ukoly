@@ -60,49 +60,57 @@ formule.each do |fi|
   #  puts "  "+res.promenne.to_s
   #end
   
-  #  sum = 0
+  sum = 0
+  cnt = 0
 
   #-------nastaveni parametru GA--------
-  $velikost_generace = 170
+  $velikost_generace = 100
   $pocet_generaci = 50
   $zachovat_nejlepsich = 2
   $mutace_rodice = 2
-  $mutace_ostatni = 2
+  $mutace_ostatni = 5
   
   #pro vice instanci
   data.each do |d| 
    
-    for $velikost_generace in [210] do
+    #cnt += 1
     
-      puts $velikost_generace.to_s
+    #break if cnt > 20
+    
+    #for $velikost_generace in [210] do
+    
+    puts $velikost_generace.to_s
       
-      tstart = Process.times.utime
+    tstart = Process.times.utime
   
-      #prvni generace se vygeneruje pri inic. genetickeho algoritmu
-      g = GA.new(data[0])
+    #prvni generace se vygeneruje pri inic. genetickeho algoritmu
+    g = GA.new(data[0])
     
-      #test resnei v prvni generaci
-      #  sum += g.stats1g
-      #  next
+    #test resnei v prvni generaci
+    #  sum += g.stats1g
+    #  next
   
-      for i in 1..$pocet_generaci
-        g.vytvor  #vytvori novou generaci
-        g.krok  #nastavi novou generaci za aktualni
-        g.stats_maxcena #vypise info o akt.generaci
-      end
-  
-      ut = Process.times.utime - tstart
-  
-      #nejlepsi = g.nejlepsi
-      #puts "-- nejlepsi: "+g.data.ohodnoceni(nejlepsi)[2].to_s
-      puts ut.to_s
-      puts "  "
-  
+    for i in 1..$pocet_generaci
+      g.vytvor  #vytvori novou generaci
+      g.krok  #nastavi novou generaci za aktualni
+      g.stats_maxcena #vypise info o akt.generaci
     end
+  
+    #sum += g.stats1g
+    
+    ut = Process.times.utime - tstart
+  
+    #nejlepsi = g.nejlepsi
+    #puts "-- nejlepsi: "+g.data.ohodnoceni(nejlepsi)[2].to_s
+    puts ut.to_s
+    #puts "  "
+  
+    #end
 
   end #konec iteratoru pro mereni vice inst.
 
-  puts (sum/226).to_s
+  puts ""
+  puts (sum/20).to_s
   
 end
   
